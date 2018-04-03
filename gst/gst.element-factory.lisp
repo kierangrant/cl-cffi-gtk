@@ -1,10 +1,9 @@
 ;;; ----------------------------------------------------------------------------
-;;; gst.video-overlay.lisp
+;;; gst.element-factory.lisp
 ;;;
-;;; The documentation of this file is taken from the GStreamer Base
-;;; Library 1.0 Reference Manual Version 1.14.0 and modified to document
-;;; the Lisp binding to the GStreamer library.  See
-;;; <https://gstreamer.freedesktop.org>.
+;;; The documentation of this file is taken from the GStreamer Core 1.0
+;;; Reference Manual Version 1.14.0 and modified to document the Lisp binding to
+;;; the GStreamer library.  See <https://gstreamer.freedesktop.org>.
 ;;;
 ;;; Copyright (C) 2018 Olof-Joachim Frahm
 ;;;
@@ -26,34 +25,25 @@
 ;;; and <http://opensource.franz.com/preamble.html>.
 ;;; ----------------------------------------------------------------------------
 ;;;
-;;; GstVideoOverlay
+;;; GstElementFactory
 ;;;
-;;; Interface for setting/getting a window system resource on elements
-;;; supporting it to configure a window into which to render a video.
+;;; Create GstElements from a factory
 ;;;
 ;;; Synopsis
 ;;;
-;;;     GstVideoOverlay
+;;;     GstElementFactory
 ;;; ----------------------------------------------------------------------------
 
 (in-package :gst)
 
 ;;; ----------------------------------------------------------------------------
-;;; GstVideoOverlay
+;;; gst_element_factory_make ()
 ;;; ----------------------------------------------------------------------------
 
-(define-g-interface "GstVideoOverlay" gst-video-overlay
-  (:export t
-   :type-initializer "gst_video_overlay_get_type"))
+(defcfun ("gst_element_factory_make" gst-element-factory-make) (g-object gst-element)
+  (factoryname :string)
+  (name :string))
 
-;;; ----------------------------------------------------------------------------
-;;; gst_video_overlay_set_window_handle ()
-;;; ----------------------------------------------------------------------------
+(export 'gst-element-factory-make)
 
-(defcfun ("gst_video_overlay_set_window_handle" gst-video-overlay-set-window-handle) :void
-  (overlay (g-object gst-video-overlay))
-  (handle :pointer))
-
-(export 'gst-video-overlay-set-window-handle)
-
-;;; --- End of file gst.video-overlay.lisp -------------------------------------
+;;; --- End of file gst.element-factory.lisp -----------------------------------

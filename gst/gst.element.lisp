@@ -1,4 +1,44 @@
+;;; ----------------------------------------------------------------------------
+;;; gst.element.lisp
+;;;
+;;; The documentation of this file is taken from the GStreamer Core 1.0
+;;; Reference Manual Version 1.14.0 and modified to document the Lisp binding to
+;;; the GStreamer library.  See <https://gstreamer.freedesktop.org>.
+;;;
+;;; Copyright (C) 2018 Olof-Joachim Frahm
+;;;
+;;; This program is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU Lesser General Public License for Lisp
+;;; as published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version and with a preamble to
+;;; the GNU Lesser General Public License that clarifies the terms for use
+;;; with Lisp programs and is referred as the LLGPL.
+;;;
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU Lesser General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU Lesser General Public
+;;; License along with this program and the preamble to the Gnu Lesser
+;;; General Public License.  If not, see <http://www.gnu.org/licenses/>
+;;; and <http://opensource.franz.com/preamble.html>.
+;;; ----------------------------------------------------------------------------
+;;;
+;;; GstElement
+;;;
+;;; Abstract base class for all pipeline elements
+;;;
+;;; Synopsis
+;;;
+;;;     GstElement
+;;; ----------------------------------------------------------------------------
+
 (in-package :gst)
+
+;;; ----------------------------------------------------------------------------
+;;; struct GstElement
+;;; ----------------------------------------------------------------------------
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (register-object-type "GstElement" 'gst-element))
@@ -10,24 +50,44 @@
    :type-initializer "gst_element_get_type")
   ())
 
-(defcenum gst-state-change-return
+;;; ----------------------------------------------------------------------------
+;;; enum GstStateChangeReturn
+;;; ----------------------------------------------------------------------------
+
+(define-g-enum "GstStateChangeReturn" gst-state-change-return
+  (:export t
+   :type-initializer "gst_state_change_return_get_type")
   :failure
   :success
   :async
   :no-preroll)
 
-(defcenum gst-state
+;;; ----------------------------------------------------------------------------
+;;; enum GstState
+;;; ----------------------------------------------------------------------------
+
+(define-g-enum "GstState" gst-state
+  (:export t
+   :type-initializer "gst_state_get_type")
   :void-pending
   :null
   :ready
   :paused
   :playing)
 
+;;; ----------------------------------------------------------------------------
+;;; gst_element_set_state ()
+;;; ----------------------------------------------------------------------------
+
 (defcfun ("gst_element_set_state" gst-element-set-state) gst-state-change-return
   (element (g-object gst-element))
   (state gst-state))
 
 (export 'gst-element-set-state)
+
+;;; ----------------------------------------------------------------------------
+;;; gst_element_get_state ()
+;;; ----------------------------------------------------------------------------
 
 (defcfun ("gst_element_get_state" %gst-element-get-state) gst-state-change-return
   (element (g-object gst-element))
@@ -47,7 +107,13 @@
 
 (export 'gst-element-get-state)
 
-(defcenum gst-format
+;;; ----------------------------------------------------------------------------
+;;; enum GstFormat
+;;; ----------------------------------------------------------------------------
+
+(define-g-enum "GstFormat" gst-format
+  (:export t
+   :type-initializer "gst_format_get_type")
   :undefined
   :default
   :bytes
@@ -55,18 +121,25 @@
   :buffers
   :percent)
 
-(defconstant +gst-seek-flag-none+ (ash 0 0))
-(defconstant +gst-seek-flag-flush+ (ash 1 0))
-(defconstant +gst-seek-flag-accurate+ (ash 1 1))
-(defconstant +gst-seek-flag-key-unit+ (ash 1 2))
-(defconstant +gst-seek-flag-segment+ (ash 1 3))
-(defconstant +gst-seek-flag-trickmode+ (ash 1 4))
-(defconstant +gst-seek-flag-skip+ (ash 1 4))
-(defconstant +gst-seek-flag-snap-before+ (ash 1 5))
-(defconstant +gst-seek-flag-snap-after+ (ash 1 6))
-(defconstant +gst-seek-flag-snap-nearest+ (logior +gst-seek-flag-snap-before+ +gst-seek-flag-snap-after+))
-(defconstant +gst-seek-flag-trickmode-key-units+ (ash 1 7))
-(defconstant +gst-seek-flag-trickmode-no-audio+ (ash 1 8))
+(define-g-flags "GstSeekFlags" gst-seek-flags
+  (:export t
+   :type-initializer "gst_seek_flags_get_type")
+  (:none 0)
+  (:flush #.(ash 1 0))
+  (:accurate #.(ash 1 1))
+  (:key-unit #.(ash 1 2))
+  (:segment #.(ash 1 3))
+  (:trickmode #.(ash 1 4))
+  (:skip #.(ash 1 4))
+  (:snap-before #.(ash 1 5))
+  (:snap-after #.(ash 1 6))
+  (:snap-nearest #.(logior (ash 1 5) (ash 1 6)))
+  (:trickmode-key-units #.(ash 1 7))
+  (:trickmode-no-audio #.(ash 1 8)))
+
+;;; ----------------------------------------------------------------------------
+;;; gst_element_seek_simple ()
+;;; ----------------------------------------------------------------------------
 
 (defcfun ("gst_element_seek_simple" gst-element-seek-simple) :boolean
   (element (g-object gst-element))
@@ -75,6 +148,10 @@
   (seek-pos :int64))
 
 (export 'gst-element-seek-simple)
+
+;;; ----------------------------------------------------------------------------
+;;; gst_element_query_position ()
+;;; ----------------------------------------------------------------------------
 
 (defcfun ("gst_element_query_position" %gst-element-query-position) :boolean
   (element (g-object gst-element))
@@ -88,6 +165,10 @@
 
 (export 'gst-element-query-position)
 
+;;; ----------------------------------------------------------------------------
+;;; gst_element_query_duration ()
+;;; ----------------------------------------------------------------------------
+
 (defcfun ("gst_element_query_duration" %gst-element-query-duration) :boolean
   (element (g-object gst-element))
   (format gst-format)
@@ -99,3 +180,5 @@
       (mem-ref duration :int64))))
 
 (export 'gst-element-query-duration)
+
+;;; --- End of file gst.element.lisp -------------------------------------------
