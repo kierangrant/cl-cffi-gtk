@@ -36,49 +36,58 @@
 
 (in-package :gst)
 
-(define-g-flags "GstMessageType" gst-message-type
+(define-g-enum "GstMessageType" gst-message-type
   (:export t
    :type-initializer "gst_message_type_get_type")
-  (:gst-message-unknown 0)
-  (:gst-message-eos #.(ash 1 0))
-  (:gst-message-error #.(ash 1 1))
-  (:gst-message-warning #.(ash 1 2))
-  (:gst-message-info #.(ash 1 3))
-  (:gst-message-tag #.(ash 1 4))
-  (:gst-message-buffering #.(ash 1 5))
-  (:gst-message-state-changed #.(ash 1 6))
-  (:gst-message-state-dirty #.(ash 1 7))
-  (:gst-message-step-done #.(ash 1 8))
-  (:gst-message-clock-provide #.(ash 1 9))
-  (:gst-message-clock-lost #.(ash 1 10))
-  (:gst-message-new-clock #.(ash 1 11))
-  (:gst-message-structure-change #.(ash 1 12))
-  (:gst-message-stream-status #.(ash 1 13))
-  (:gst-message-application #.(ash 1 14))
-  (:gst-message-element #.(ash 1 15))
-  (:gst-message-segment-start #.(ash 1 16))
-  (:gst-message-segment-done #.(ash 1 17))
-  (:gst-message-duration-changed #.(ash 1 18))
-  (:gst-message-latency #.(ash 1 19))
-  (:gst-message-async-start #.(ash 1 20))
-  (:gst-message-async-done #.(ash 1 21))
-  (:gst-message-request-state #.(ash 1 22))
-  (:gst-message-step-start #.(ash 1 23))
-  (:gst-message-qos #.(ash 1 24))
-  (:gst-message-progress #.(ash 1 25))
-  (:gst-message-toc #.(ash 1 26))
-  (:gst-message-reset-time #.(ash 1 27))
-  (:gst-message-stream-start #.(ash 1 28))
-  (:gst-message-need-context #.(ash 1 29))
-  (:gst-message-have-context #.(ash 1 30))
-  (:gst-message-extended #.(ash 1 31))
-  (:gst-message-device-added #.(+ (ash 1 31) 1))
-  (:gst-message-device-removed #.(+ (ash 1 31) 2))
-  (:gst-message-property-notify #.(+ (ash 1 31) 3))
-  (:gst-message-stream-collection #.(+ (ash 1 31) 4))
-  (:gst-message-streams-selected #.(+ (ash 1 31) 5))
-  (:gst-message-redirect #.(+ (ash 1 31) 6))
-  (:gst-message-any #xffffffff))
+  (:unknown 0)
+  (:eos #.(ash 1 0))
+  (:error #.(ash 1 1))
+  (:warning #.(ash 1 2))
+  (:info #.(ash 1 3))
+  (:tag #.(ash 1 4))
+  (:buffering #.(ash 1 5))
+  (:state-changed #.(ash 1 6))
+  (:state-dirty #.(ash 1 7))
+  (:step-done #.(ash 1 8))
+  (:clock-provide #.(ash 1 9))
+  (:clock-lost #.(ash 1 10))
+  (:new-clock #.(ash 1 11))
+  (:structure-change #.(ash 1 12))
+  (:stream-status #.(ash 1 13))
+  (:application #.(ash 1 14))
+  (:element #.(ash 1 15))
+  (:segment-start #.(ash 1 16))
+  (:segment-done #.(ash 1 17))
+  (:duration-changed #.(ash 1 18))
+  (:latency #.(ash 1 19))
+  (:async-start #.(ash 1 20))
+  (:async-done #.(ash 1 21))
+  (:request-state #.(ash 1 22))
+  (:step-start #.(ash 1 23))
+  (:qos #.(ash 1 24))
+  (:progress #.(ash 1 25))
+  (:toc #.(ash 1 26))
+  (:reset-time #.(ash 1 27))
+  (:stream-start #.(ash 1 28))
+  (:need-context #.(ash 1 29))
+  (:have-context #.(ash 1 30))
+  (:extended #.(ash 1 31))
+  (:device-added #.(+ (ash 1 31) 1))
+  (:device-removed #.(+ (ash 1 31) 2))
+  (:property-notify #.(+ (ash 1 31) 3))
+  (:stream-collection #.(+ (ash 1 31) 4))
+  (:streams-selected #.(+ (ash 1 31) 5))
+  (:redirect #.(+ (ash 1 31) 6))
+  (:any #xffffffff))
+
+(define-g-enum "GstState" gst-state
+  (:export t
+   :type-initializer "gst_state_get_type")
+  :void-pending
+  :null
+  :ready
+  :paused
+  :playing)
 
 ;;; ----------------------------------------------------------------------------
 ;;; struct GstMessage
@@ -87,11 +96,35 @@
 (define-g-boxed-cstruct gst-message "GstMessage"
   (mini-object (:struct gst-mini-object-cstruct))
   ;; (mini-object (g-boxed-foreign gst-mini-object))
-  (type :int)
+  (type gst-message-type)
   (timestamp :uint64)
   (src :pointer)
   ;; (src (g-object gst-object))
   (seqnum :uint32))
+
+;;; ----------------------------------------------------------------------------
+;;; gst_message_parse_state_changed ()
+;;; ----------------------------------------------------------------------------
+
+(defcfun ("gst_message_parse_state_changed" %gst-message-parse-state-changed) :void
+  (message :pointer)
+  (oldstate :pointer)
+  (newstate :pointer)
+  (pending :pointer))
+
+(defun gst-message-parse-state-changed (message)
+  (with-foreign-object (states 'gst-state 3)
+    (%gst-message-parse-state-changed
+     message
+     (mem-aptr states 'gst-state 0)
+     (mem-aptr states 'gst-state 1)
+     (mem-aptr states 'gst-state 2))
+    (values
+     (mem-aref states 'gst-state 0)
+     (mem-aref states 'gst-state 1)
+     (mem-aref states 'gst-state 2))))
+
+(export 'gst-message-parse-state-changed)
 
 ;;; ----------------------------------------------------------------------------
 ;;; gst_is_video_overlay_prepare_window_handle_message ()

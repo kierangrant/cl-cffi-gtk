@@ -144,7 +144,7 @@
 (defcfun ("gst_element_seek_simple" gst-element-seek-simple) :boolean
   (element (g-object gst-element))
   (format gst-format)
-  (seek-flags :int)
+  (seek-flags gst-seek-flags)
   (seek-pos :int64))
 
 (export 'gst-element-seek-simple)
